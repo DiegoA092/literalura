@@ -29,7 +29,7 @@ public class Principal extends Acciones {
                         1 - Buscar libro por titulo
                         2 - Listar libros registrados
                         3 - Listar autores registrados
-                        4 - Listar autores vivos en determinado periodo
+                        4 - Listar autores vivos desde determinado año
                         5 - Listar libros por idioma
                         6 - Top 10 libros mas descargados
                         7 - Listar libros registrados por autor
