@@ -90,6 +90,8 @@ public class Principal extends Acciones {
                             break;
                         case 0:
                             System.out.println("Cerrando la aplicación...");
+                            System.out.println("  *** Gracias por usar Literalura ***");
+                            System.out.println("*** Desarrollado por Diego Alvarado ***");
                             break;
                         default:
                             System.out.println("Opción inválida");
