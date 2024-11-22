@@ -24,6 +24,5 @@ public class LiteraluraApplication implements CommandLineRunner {
 		Principal principal = new Principal(repository, autorRepository);
 		principal.mensajeDeBienvenida();
 		principal.muestraElMenu();
-
 	}
 }

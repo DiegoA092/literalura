@@ -15,4 +15,6 @@ public interface LibroRepository extends JpaRepository<Libro, Long> {
 
     @Query("SELECT l FROM Autor a JOIN a.libros l WHERE a.nombre ILIKE %:autorSeleccionado%")
     List<Libro> listarLibrosPorAutor(String autorSeleccionado);
+
+    Libro findByTitulo(String nombreLibro);
 }

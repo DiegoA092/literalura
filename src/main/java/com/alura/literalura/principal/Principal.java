@@ -2,11 +2,15 @@ package com.alura.literalura.principal;
 
 import com.alura.literalura.repository.AutorRepository;
 import com.alura.literalura.repository.LibroRepository;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Principal extends Acciones {
     private Scanner teclado = new Scanner(System.in);
+    private boolean confirmacion;
 
     public Principal(LibroRepository repository, AutorRepository autorRepository) {
         super(repository, autorRepository);
@@ -33,43 +37,68 @@ public class Principal extends Acciones {
 
                         0 - Salir
                         """;
-                System.out.println(menu);
-                opcion = teclado.nextInt();
-                teclado.nextLine();
 
-                switch (opcion) {
-                    case 1:
-                        buscarLibroPorTitulo();
-                        break;
-                    case 2:
-                        listarLibrosRegistrados();
-                        break;
-                    case 3:
-                        listarAutoresRegistrados();
-                        break;
-                    case 4:
-                        listarAutoresPorFecha();
-                        break;
-                    case 5:
-                        listarLibrosPorIdioma();
-                        break;
-                    case 6:
-                        top10LibrosMasDescargados();
-                        break;
-                    case 7:
-                        listarLibrosPorAutor();
-                        break;
-                    case 8:
-                        estadisticas();
-                        break;
-                    case 0:
-                        System.out.println("Cerrando la aplicación...");
-                        break;
-                    default:
-                        System.out.println("Opción inválida");
+                try {
+                    System.out.println(menu);
+                    opcion = teclado.nextInt();
+                    teclado.nextLine();
+
+                    switch (opcion) {
+                        case 1:
+                            confirmacion = false;
+                            do {
+                                try {
+                                    confirmacion = buscarLibroPorTitulo();
+                                } catch (IndexOutOfBoundsException e) {
+                                    System.out.println("Libro no disponible, intente de nuevo");
+                                } catch (IllegalArgumentException e) {
+                                    System.out.println("Ingrese titulo valido");
+                                }} while (!confirmacion);
+                            break;
+                        case 2:
+                            listarLibrosRegistrados();
+                            break;
+                        case 3:
+                            listarAutoresRegistrados();
+                            break;
+                        case 4:
+                            listarAutoresPorFecha();
+                            break;
+                        case 5:
+                            confirmacion = false;
+                            do {
+                                try {
+                                    confirmacion = listarLibrosPorIdioma();
+                                } catch (IllegalArgumentException e) {
+                                    System.out.println("Ingrese idioma valido");
+                                } } while (!confirmacion);
+                            break;
+                        case 6:
+                            top10LibrosMasDescargados();
+                            break;
+                        case 7:
+                            confirmacion = false;
+                            do {
+                            try {
+                                confirmacion = listarLibrosPorAutor();
+                            } catch (IndexOutOfBoundsException e) {
+                                System.out.println("Ingrese autor valido");
+                            } } while (!confirmacion);
+                            break;
+                        case 8:
+                            estadisticas();
+                            break;
+                        case 0:
+                            System.out.println("Cerrando la aplicación...");
+                            break;
+                        default:
+                            System.out.println("Opción inválida");
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Ingrese opcion valida");
+                    teclado.next();
                 }
             }
-
         }
 
 }

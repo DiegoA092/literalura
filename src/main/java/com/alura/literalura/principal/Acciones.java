@@ -22,6 +22,8 @@ public class Acciones {
     private List<Libro> libros;
     private List<Autor> autores;
     private List<String> listaNombres;
+    private List<String> listaNombresLibros;
+    private Integer fechaInicial;
 
     public Acciones(LibroRepository repository, AutorRepository autorRepository){
         this.repositorio = repository;
@@ -30,27 +32,33 @@ public class Acciones {
 
     public DatosListaDeLibros obtenerListaDeLibros() {
         System.out.println("Introduzca el titulo del libro a buscar:");
-        var libroBuscado = teclado.nextLine();
+        var libroBuscado = teclado.nextLine().trim();
         var json = consumoApi.obtenerDatos(URL_BASE+libroBuscado.replace(" ", "%20"));
         return conversor.obtenerDatos(json, DatosListaDeLibros.class);
     }
 
-    public void buscarLibroPorTitulo() {
-        listarNombresDeAutores();
-        DatosListaDeLibros datosListaDeLibros = obtenerListaDeLibros();
-        Libro libro = new Libro(datosListaDeLibros.resultados().get(0));
-        Autor autor = libro.getAutor();
-        String nombreAutor = autor.getNombre();
-        if (listaNombres.contains(nombreAutor)) {
-            Autor autorExistente = autorRepositorio.findByNombre(nombreAutor);
-            libro.setAutor(autorExistente);
-            repositorio.save(libro);
-            System.out.println(libro);
-        } else {
-            autorRepositorio.save(autor);
-            repositorio.save(libro);
-            System.out.println(libro);
-        }
+    public boolean buscarLibroPorTitulo() {
+            listarNombresDeAutores();
+            DatosListaDeLibros datosListaDeLibros = obtenerListaDeLibros();
+            Libro libro = new Libro(datosListaDeLibros.resultados().get(0));
+            Autor autor = libro.getAutor();
+            String nombreAutor = autor.getNombre();
+            String nombreLibro = libro.getTitulo();
+            listarLibrosPorNombre();
+            if (listaNombresLibros.contains(nombreLibro)) {
+                Libro libroExistente = repositorio.findByTitulo(nombreLibro);
+                System.out.println(libroExistente);
+            } else {
+                if (listaNombres.contains(nombreAutor)) {
+                    Autor autorExistente = autorRepositorio.findByNombre(nombreAutor);
+                    libro.setAutor(autorExistente);
+                } else {
+                    autorRepositorio.save(autor);
+                }
+                repositorio.save(libro);
+                System.out.println(libro);
+            }
+        return true;
     }
 
     public void listarNombresDeAutores() {
@@ -59,6 +67,15 @@ public class Acciones {
         for (int i = 0; i < autores.size(); i++) {
             String autor = autores.get(i).getNombre();
             listaNombres.add(autor);
+        }
+    }
+
+    public void listarLibrosPorNombre() {
+        libros = repositorio.findAll();
+        listaNombresLibros = new ArrayList<>();
+        for (int i = 0; i < libros.size(); i++) {
+            String libro = libros.get(i).getTitulo();
+            listaNombresLibros.add(libro);
         }
     }
 
@@ -88,20 +105,30 @@ public class Acciones {
     }
 
     public void listarAutoresPorFecha(){
-        System.out.println("Introduce fecha inicial:");
-        var fechaInicial = teclado.nextInt();
-        teclado.nextLine();
+        boolean confirmacion = false;
+        do {
+            try {
+                System.out.println("Introduce fecha inicial:");
+                fechaInicial = teclado.nextInt();
+                teclado.nextLine();
+                confirmacion = true;
+            } catch (InputMismatchException e) {
+                System.out.println("Introduce fecha valida");
+                teclado.next();
+            }
+        } while (!confirmacion);
         List<Autor> autoresPorFecha = autorRepositorio.autoresPorFecha(fechaInicial);
         autoresPorFecha.forEach(System.out::println);
     }
 
-    public void listarLibrosPorIdioma(){
+    public boolean listarLibrosPorIdioma(){
         System.out.println("Seleccione idioma (EN/ES/FR/PR):");
         var idiomaSeleccionado = teclado.nextLine();
         var idiomaDisponible = Idioma.fromString(idiomaSeleccionado);
         List<Libro> librosPorIdioma = repositorio.findByIdioma(idiomaDisponible);
         System.out.println("Obras en el idioma seleccionado: ");
         librosPorIdioma.forEach(l -> System.out.printf("Libro: %s | Autor: %s \n", l.getTitulo(), l.getAutor()));
+        return true;
     }
 
     public void top10LibrosMasDescargados() {
@@ -110,7 +137,7 @@ public class Acciones {
         libros.forEach(l -> System.out.printf("Descargas: %.1f Libro: %s | Autor: %s \n", l.getNumeroDeDescargas(),l.getTitulo(), l.getAutor()));
     }
 
-    public void listarLibrosPorAutor() {
+    public boolean listarLibrosPorAutor() {
         autores = autorRepositorio.findAll();
         System.out.println("Autores disponibles: ");
         autores.forEach(a -> System.out.printf("%s (%d - %d) \n", a.getNombre(), a.getFechaDeNacimiento(), a.getFechaDeDefuncion()));
@@ -120,6 +147,7 @@ public class Acciones {
         System.out.printf("Obras de %s \n", libros.get(0).getAutor());
         libros.forEach(l -> System.out.printf("Libro: %s | Idioma: %s | Descargas: %.1f \n", l.getTitulo(),
                 l.getIdioma(), l.getNumeroDeDescargas()));
+        return true;
     }
 
     public void estadisticas() {
